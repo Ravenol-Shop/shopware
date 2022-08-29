@@ -62,7 +62,7 @@ jobs:
           name: ${{ env.artifact_name }}
 
       - name: setup ssh connection
-        uses: ./.github/actions/ssh-config/action.yml
+        uses: ./.github/actions/ssh-config
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
