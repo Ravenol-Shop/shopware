@@ -2,6 +2,7 @@
     "name": "shopware/production",
     "type": "project",
     "license": "MIT",
+    "description": "Shopware 6 fork for Ravenol-Shop",
     "config": {
         "optimize-autoloader": true,
         "platform": {
