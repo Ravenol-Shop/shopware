@@ -36,7 +36,6 @@ jobs:
         run: |
           tar \
           --exclude=".git" \
-          --exclude=".github" \
           --exclude=".gitlab-ci*" \
           --exclude=".gitignore" \
           --exclude="artifacts" \
@@ -77,4 +76,5 @@ jobs:
           rm ${{ env.artifact_name }}.tgz
 
           rsync --port=22 -avz \
+          --exclude=.github
           . remote:${{ env.webroot_dir }}/
