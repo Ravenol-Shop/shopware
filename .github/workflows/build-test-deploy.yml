@@ -77,5 +77,4 @@ jobs:
           rm ${{ env.artifact_name }}.tgz
 
           rsync --port=22 -avz \
-          --delete-after \
           . remote:${{ env.webroot_dir }}/
