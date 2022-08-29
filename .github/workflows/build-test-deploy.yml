@@ -46,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.artifact_name }}
-          path: artifact/${{ env.artifact_name }}.tgz
+          path: artifacts/${{ env.artifact_name }}.tgz
 
 
   deploy:
