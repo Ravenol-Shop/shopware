@@ -34,13 +34,14 @@ jobs:
 
       - name: compression
         run: |
+          mkdir artifacts
           tar \
           --exclude=".git" \
           --exclude=".github" \
           --exclude=".gitlab-ci*" \
           --exclude=".gitignore" \
           --exclude="artifacts" \
-          -czf artifact/${{ env.artifact_name }}.tgz .
+          -czf artifacts/${{ env.artifact_name }}.tgz .
 
       - name: publish artifact
         uses: actions/upload-artifact@v2
