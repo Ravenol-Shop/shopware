@@ -34,7 +34,6 @@ jobs:
 
       - name: compression
         run: |
-          mkdir artifacts
           tar \
           --exclude=".git" \
           --exclude=".github" \
