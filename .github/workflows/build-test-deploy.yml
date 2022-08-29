@@ -1,0 +1,81 @@
+name: Build test deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+env:
+  artifact_name: ravenol-shop-${{ github.ref_name }}
+
+jobs:
+
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --no-dev --prefer-dist --no-progress
+
+      - name: compression
+        run: |
+          tar \
+          --exclude=".git" \
+          --exclude=".github" \
+          --exclude=".gitlab-ci*" \
+          --exclude=".gitignore" \
+          --exclude="artifacts" \
+          -czf artifact/${{ env.artifact_name }}.tgz .
+
+      - name: publish artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.artifact_name }}
+          path: artifact/${{ env.artifact_name }}.tgz
+
+
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: build
+    env:
+      webroot_dir: /var/www/clients/client1/web1/web/sw6/${{ github.ref_name }}
+
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.artifact_name }}
+
+      - name: setup ssh connection
+        uses: nx-actions/ssh-config-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          connection_name: remote
+
+
+      - name: Publish Artifact
+        shell: bash
+        run: |
+          tar -xzf ${{ env.artifact_name }}.tgz
+          rm ${{ env.artifact_name }}.tgz
+
+          rsync --port=22 -avz \
+          --delete-after \
+          . remote:${{ env.webroot_dir }}/

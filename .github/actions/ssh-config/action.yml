@@ -1,0 +1,73 @@
+name: 'ssh config'
+description: 'cofigure ssh connecion on github runner'
+inputs:
+  host:
+    description: 'remote hostname / ip address'
+    required: true
+  port:
+    description: 'remote port'
+    default: '22'
+    required: true
+  username:
+    description: 'username'
+    required: true
+  private_key:
+    description: 'private ssh key'
+    required: false
+  connection_name:
+    description: "name of the connection you will use later (like: ssh $connection_name 'command')"
+    required: false
+    default: remote
+  jump_host:
+    description: "another host used as jump proxy"
+    required: false
+  host_key_checking:
+    description: disable/enablle StrictHostKeyChecking
+    required: false
+    default: 'yes'
+
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: create ssh directory
+      shell: bash
+      run: mkdir -p ~/.ssh/
+
+    - name: add fingerprint to known_hosts
+      shell: bash
+      if: inputs.host_key_checking == 'yes'
+      run: ssh-keyscan -H ${{ inputs.host }} >> ~/.ssh/known_hosts
+
+    - name: create ssh configuration
+      shell: bash
+      run: |
+        cat >> ~/.ssh/config <<END
+        Host ${{ inputs.connection_name}}
+          HostName ${{ inputs.host }}
+          User ${{ inputs.username }}
+          StrictHostKeyChecking ${{ inputs.host_key_checking}}
+        END
+    - name: create ssh key file
+      shell: bash
+      if: ${{ inputs.private_key }}
+      run: |
+        echo "${{ inputs.private_key }}" > ~/.ssh/private-${{inputs.host}}.key
+        chmod 600 ~/.ssh/private-${{inputs.host}}.key
+    - name: add IdentityFile to ssh configuration
+      shell: bash
+      if: ${{ inputs.private_key }}
+      run: |
+        cat >> ~/.ssh/config <<END
+        Host ${{ inputs.connection_name}}
+          IdentityFile ~/.ssh/private-${{inputs.host}}.key
+        END
+    - name: create ssh configuration
+      shell: bash
+      if: ${{ inputs.jump_host }}
+      run: |
+        cat >> ~/.ssh/config <<END
+        Host ${{ inputs.connection_name}}
+          ProxyJump ${{inputs.jump_host}}
+        END
