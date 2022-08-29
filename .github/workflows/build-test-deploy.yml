@@ -62,7 +62,7 @@ jobs:
           name: ${{ env.artifact_name }}
 
       - name: setup ssh connection
-        uses: nx-actions/ssh-config-action@v1.0.0
+        uses: ./.github/actions/ssh-config/action.yml
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
